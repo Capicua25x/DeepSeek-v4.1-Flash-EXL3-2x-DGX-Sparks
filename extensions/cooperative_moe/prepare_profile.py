@@ -9,8 +9,8 @@ import hashlib
 from pathlib import Path, PurePosixPath
 
 STOCK_SHA = "ccdc69bfa04bff4870c3e555736a990fde6448ddb329441c4e0a27d6fc41078d"
-BINARY_SHA = "a09a589cbdcecb5372991c7b091d732236d58bc5f5aea14ab91e38e426f08d78"
-ADAPTER_SHA = "9f1d10ffc39ac4433828a000c4932a4a773b00acadd80b46c7568f494a77b2fb"
+BINARY_SHA = "848deb55d1491ffbed7f1bc956b15217f7c98683299e9d1451a04d8d42d0d182"  # LOCAL REPIN 2026-09-16: official lab rebuild (unavailable upstream artifact a09a589c); GPU gate to be recorded before deploy
+ADAPTER_SHA = "4296d2fedb0f0b2b63b96bde5b9bae3ea8fdcb7dabf44c87be097de62ab4ffcc"  # LOCAL REPIN 2026-09-16 (see runtime.py)
 
 
 def checked(path, digest):

@@ -602,11 +602,20 @@ preflight() {
             if ! worker_ssh "mkdir -p '$WORKER_MODEL_DIR' '$WORKER_ENGRAM_DIR' && test -w '$WORKER_MODEL_DIR' && test -w '$WORKER_ENGRAM_DIR'"; then
                 die "worker cannot write $WORKER_MODEL_DIR / $WORKER_ENGRAM_DIR — fix ownership"
             fi
-            local need_b avail_b
-            need_b=$(( $(du -sb "$MODEL_HOST" | awk '{print $1}') + $(zfs_bytes_for_engram) ))
-            avail_b="$(worker_ssh "df -PB1 '$WORKER_HOME' | awk 'NR==2{print \$4}'" || true)"
-            if [ -n "${avail_b:-}" ] && [ "$avail_b" -lt "$need_b" ]; then
-                die "worker has $((avail_b/1024/1024/1024)) GiB free under $WORKER_HOME, need ~$((need_b/1024/1024/1024)) GiB for a local EXL3+Engram copy. Use WEIGHT_SYNC=nfs (default; no local copy) instead of rsync."
+            # Space preflight — only when a copy is actually needed: SKIP_SYNC=1, or the
+            # worker already holds the shard set (sync_dir_to_worker's revision marker
+            # then decides precisely). Upstream this demanded room for a FULL copy even
+            # when the worker was already in sync, so any rsync-mode restart died once
+            # the replica existed (found on our pair 2026-09-16).
+            local whave
+            whave="$(worker_ssh "ls '$WORKER_MODEL_DIR'/model-*.safetensors 2>/dev/null | wc -l" || echo 0)"
+            if [ "${SKIP_SYNC:-0}" != "1" ] && [ "${whave:-0}" -lt "$EXPECTED_SHARDS" ]; then
+                local need_b avail_b
+                need_b=$(( $(du -sb "$MODEL_HOST" | awk '{print $1}') + $(zfs_bytes_for_engram) ))
+                avail_b="$(worker_ssh "df -PB1 '$WORKER_HOME' | awk 'NR==2{print \$4}'" || true)"
+                if [ -n "${avail_b:-}" ] && [ "$avail_b" -lt "$need_b" ]; then
+                    die "worker has $((avail_b/1024/1024/1024)) GiB free under $WORKER_HOME, need ~$((need_b/1024/1024/1024)) GiB for a local EXL3+Engram copy. Use WEIGHT_SYNC=nfs (default; no local copy) instead of rsync."
+                fi
             fi
             ;;
     esac

@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 import torch
 
-SHA256 = "a09a589cbdcecb5372991c7b091d732236d58bc5f5aea14ab91e38e426f08d78"
+SHA256 = "848deb55d1491ffbed7f1bc956b15217f7c98683299e9d1451a04d8d42d0d182"  # LOCAL REPIN 2026-09-16: official lab rebuild (upstream artifact unavailable); GPU gate re-run before deploy
 PTR_KEYS = (
     "gate_trellis",
     "gate_suh",
